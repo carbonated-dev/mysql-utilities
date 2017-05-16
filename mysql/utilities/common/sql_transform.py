@@ -270,6 +270,8 @@ def transform_data(destination, source, operation, rows):
     # Get column names quoted with backticks
     dest_cols = destination.get_col_names(quote_backticks=True)
     src_cols = source.get_col_names(quote_backticks=True)
+    afterPeriodIndex = destination.table.index('.') + 1
+    justTable = "`" + destination.table[afterPeriodIndex:] + "`"
 
     # We cannot do the data changes if the columns are different in the
     # destination and source!
@@ -284,19 +286,19 @@ def transform_data(destination, source, operation, rows):
             for col in row:
                 formatted_row.append(to_sql(col))
             statements.append("INSERT INTO %s (%s) VALUES(%s);" %
-                              (destination.q_table, ', '.join(dest_cols),
+                              (justTable, ', '.join(dest_cols),
                                ', '.join(formatted_row)))
     elif data_op == "UPDATE":
         for i in range(0, len(rows[0])):
             row1 = rows[0][i]
             row2 = rows[1][i]
-            sql_str = "UPDATE %s" % destination.q_table
+            sql_str = "UPDATE %s" % justTable
             sql_str += " %s" % build_set_clauses(source, src_cols, row1, row2)
             sql_str += " %s" % build_pkey_where_clause(source, row2)
             statements.append("%s;" % sql_str)
     elif data_op == "DELETE":
         for row in rows:
-            sql_str = "DELETE FROM %s " % destination.q_table
+            sql_str = "DELETE FROM %s " % justTable
             sql_str += build_pkey_where_clause(source, row)
             statements.append("%s;" % sql_str)
     else:
@@ -1119,8 +1121,8 @@ class SQLTransformer(object):
             # preamble
             {'fmt': "%s", 'col': _IGNORE_COLUMN, 'val': "ALTER TABLE"},
             # object name
-            {'fmt': " %s.%s", 'col': _IGNORE_COLUMN,
-             'val': (q_dest_db_name, q_dest_tbl_name)},
+            {'fmt': " %s", 'col': _IGNORE_COLUMN,
+             'val': (q_dest_tbl_name)},
             # alter clauses - will be completed later
             {'fmt': " \n%s", 'col': _IGNORE_COLUMN, 'val': ""},
         ]

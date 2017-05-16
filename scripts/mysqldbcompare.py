@@ -125,6 +125,10 @@ if __name__ == '__main__':
                       help="skip check of all table options (e.g., "
                            "AUTO_INCREMENT, ENGINE, CHARSET, etc.).")
 
+    parser.add_option("--skip-tables-list", action="append",
+                      dest="skip_tables_list",
+                      help="skip comparing certain tables")
+
     # Add display width option
     parser.add_option("--width", action="store", dest="width",
                       type="int", help="display width",
@@ -334,6 +338,11 @@ if __name__ == '__main__':
                         else quote_with_backticks(index, server1_sql_mode))
             db_idxes_l.append((table_uc, index_uc))
         options["use_indexes"] = db_idxes_l
+
+    # Skip tables given as a comma-delimited list
+    if opt.skip_tables_list is not None:
+        options['skip_tables_list'] = opt.skip_tables_list
+
 
     # Check --span-key-size value.
     if opt.span_key_size is not None:

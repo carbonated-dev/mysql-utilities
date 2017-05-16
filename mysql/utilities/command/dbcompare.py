@@ -461,6 +461,10 @@ def database_compare(server1_val, server2_val, db1, db2, options):
         # Set the object type
         obj_type = item[0]
 
+        if 'skip_tables_list' in options and obj_type == 'TABLE' and [s for s in options['skip_tables_list'] if item[1][0] in s]:
+            print("\n# Skipping table: " + item[1][0])
+            continue
+
         q_obj1 = "{0}.{1}".format(quote_with_backticks(db1, server1_sql_mode),
                                   quote_with_backticks(item[1][0],
                                                        server1_sql_mode))

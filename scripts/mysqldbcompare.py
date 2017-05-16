@@ -62,9 +62,9 @@ check_python_version()
 
 # Constants
 NAME = "MySQL Utilities - mysqldbcompare "
-DESCRIPTION = "mysqldbcompare - compare databases for consistency"
+DESCRIPTION = "mysqldbcompare - compare databases for consistency (with Carbonated modifications)"
 USAGE = "%prog --server1=user:pass@host:port:socket " + \
-        "--server2=user:pass@host:port:socket db1:db2"
+        "--server2=user:pass@host:port:socket db1:db2    (Carbonated Modifications)"
 PRINT_WIDTH = 75
 
 # Check for connector/python

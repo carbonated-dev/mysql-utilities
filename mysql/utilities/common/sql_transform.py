@@ -24,6 +24,7 @@ import re
 
 from mysql.utilities.exception import UtilError, UtilDBError
 from mysql.connector.conversion import MySQLConverter
+from collections import OrderedDict
 
 
 _IGNORE_COLUMN = -1  # Ignore column in comparisons and transformations
@@ -230,8 +231,8 @@ def build_set_clauses(table, table_cols, dest_row, src_row):
     # do SETs
     set_str = ""
     do_comma = False
-    for col_idx in range(0, len(table_cols)):
-        if dest_row[col_idx] != src_row[col_idx]:
+    for col_name in table_cols:
+        if not(col_name in dest_row) or dest_row[col_name] != src_row[col_name]:
             # do comma
             if do_comma:
                 set_str += ", "
@@ -239,11 +240,11 @@ def build_set_clauses(table, table_cols, dest_row, src_row):
                 set_str = "SET "
                 do_comma = True
             # Check for NULL for non-text fields that have no value in new row
-            if src_row[col_idx] is None:
-                set_str += "%s = %s" % (table_cols[col_idx], "NULL")
+            if src_row[col_name] is None:
+                set_str += "%s = %s" % (col_name, "NULL")
             else:
-                set_str += "%s = %s" % (table_cols[col_idx],
-                                        to_sql(src_row[col_idx]))
+                set_str += "%s = %s" % (col_name,
+                                        to_sql(src_row[col_name]))
 
     return set_str
 
@@ -275,10 +276,10 @@ def transform_data(destination, source, operation, rows):
 
     # We cannot do the data changes if the columns are different in the
     # destination and source!
-    if dest_cols != src_cols:
-        return ["WARNING: Cannot generate SQL UPDATE commands for "
-                "tables whose definitions are different. Check the "
-                "table definitions for changes."]
+    # if dest_cols != src_cols:
+    #     return ["WARNING: Cannot generate SQL UPDATE commands for "
+    #             "tables whose definitions are different. Check the "
+    #             "table definitions for changes."]
     data_op = operation.upper()
     if data_op == "INSERT":
         for row in rows:
@@ -286,14 +287,23 @@ def transform_data(destination, source, operation, rows):
             for col in row:
                 formatted_row.append(to_sql(col))
             statements.append("INSERT INTO %s (%s) VALUES(%s);" %
-                              (justTable, ', '.join(dest_cols),
+                              (justTable, ', '.join(src_cols),
                                ', '.join(formatted_row)))
     elif data_op == "UPDATE":
         for i in range(0, len(rows[0])):
             row1 = rows[0][i]
             row2 = rows[1][i]
+
+            row1_dict = OrderedDict()
+            row2_dict = OrderedDict()
+            for colindex in range(0,len(row1)):
+                row1_dict[src_cols[colindex]]=row1[colindex]
+
+            for colindex in range(0,len(row2)):
+                row2_dict[src_cols[colindex]]=row2[colindex]
+
             sql_str = "UPDATE %s" % justTable
-            sql_str += " %s" % build_set_clauses(source, src_cols, row1, row2)
+            sql_str += " %s" % build_set_clauses(source, src_cols, row1_dict, row2_dict)
             sql_str += " %s" % build_pkey_where_clause(source, row2)
             statements.append("%s;" % sql_str)
     elif data_op == "DELETE":

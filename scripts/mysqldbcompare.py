@@ -125,9 +125,13 @@ if __name__ == '__main__':
                       help="skip check of all table options (e.g., "
                            "AUTO_INCREMENT, ENGINE, CHARSET, etc.).")
 
-    parser.add_option("--skip-tables-list", action="append",
+    parser.add_option("--skip-tables-list", action="store",
                       dest="skip_tables_list",
                       help="skip comparing certain tables")
+
+    parser.add_option("--only-tables-list", action="store",
+                      dest="only_tables_list",
+                      help="only compare tables listed")
 
     # Add display width option
     parser.add_option("--width", action="store", dest="width",
@@ -341,8 +345,9 @@ if __name__ == '__main__':
 
     # Skip tables given as a comma-delimited list
     if opt.skip_tables_list is not None:
-        options['skip_tables_list'] = opt.skip_tables_list
-
+        options['skip_tables_list'] = opt.skip_tables_list.split(",")
+    elif opt.only_tables_list is not None:
+        options['only_tables_list'] = opt.only_tables_list.split(",")
 
     # Check --span-key-size value.
     if opt.span_key_size is not None:

@@ -465,8 +465,8 @@ def database_compare(server1_val, server2_val, db1, db2, options):
             if 'skip_tables_list' in options and [s for s in options['skip_tables_list'] if item[1][0] == s]:
                 print("\n# Skipping table: " + item[1][0])
                 continue
-            elif 'only_tables_list' in options and [s for s in options['only_tables_list'] if item[1][0] != s]:
-                print("\n# Skipping table: " + item[1][0])
+            elif 'only_tables_list' in options and not [s for s in options['only_tables_list'] if item[1][0] == s]:
+                print("\n# Skipping table: :" + item[1][0]+":")
                 continue
 
 
